@@ -9,6 +9,7 @@ public:
 	Sint32 getX() const;
 	Sint32 getY() const;
 	Sint32 getLength() const;
+	double getSlope() const;
 	void setX(Sint32);
 	void setY(Sint32);
 	Point& operator+=(Point const&);
@@ -17,11 +18,13 @@ public:
 private:
 	// Méthodes
 	void computeLength();
+	void computeSlope();
 
 	// Attributs
 	Sint32 _x;
 	Sint32 _y;
 	Sint32 _length;
+	double _slope;
 };
 
 bool operator==(Point const&, Point const&);

@@ -2,6 +2,9 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <cmath>
+#include <vector>
+#include <iterator>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "Point.h"
@@ -42,8 +45,9 @@ void update_dir();
 void draw_grid();
 void draw_point(Point&, int, int, SDL_Color);
 void render_text(SDL_Renderer*, int, int, const char*, TTF_Font*, SDL_Rect*, SDL_Color&);
-void get_intersection_points();
 void free_ptr();
+vector<Point> compute_intersection_points();
+Point get_intersection_points(Point&, Point&);
 
 /* Définition des fonctions */
 
@@ -86,13 +90,19 @@ int main() {
 
     bool fullscreen = false;
     bool quit = 0;
-    
+    vector<Point> pts;
+
     while (!quit) {
         SDL_RenderClear(renderer);
         draw_grid();
         draw_point(mouse_position, PLAYER_W, PLAYER_H, RED);
         draw_point(target_position, PLAYER_W, PLAYER_H, GREEN);
         update_dir();
+        pts = compute_intersection_points();
+        vector<Point>::iterator it;
+        for (it = pts.begin(); it < pts.end(); it++) {
+            draw_point(*it, 5, 5, SDL_Color{ 255, 255, 0, 0 });
+        }
 
         string s = "X : " + to_string(mouse_position.getX()) + " ; Y : " + to_string(mouse_position.getY());
         const char* c = s.c_str();;
@@ -206,4 +216,41 @@ void draw_point(Point& point, int w, int h, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer, &rect);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+}
+
+vector<Point> compute_intersection_points() {
+    vector<Point> pts = vector<Point>();
+    pts.push_back(get_intersection_points(mouse_position, dir));
+
+    for (int i = 0; i < 6; i++) {
+        pts.push_back(get_intersection_points(pts.back(), dir));
+    }
+
+    return pts;
+}
+
+Point get_intersection_points(Point &point, Point &dir) {
+    int dx, dy;
+    
+    dx = GRID_W; // le pas unitaire en x
+    dy = GRID_H; // le pas unitaire en y
+
+    double lx = dx * sqrt(1 + 1 / pow(dir.getSlope(), 2));
+    double ly = dy * sqrt(1 + pow(dir.getSlope(), 2));
+
+    dx = dx * ((dir.getX() < 0) ? -1 : 1);
+    dy = dy * ((dir.getY() < 0) ? -1 : 1);
+
+    Point intersect = Point(0, 0);
+
+    if (lx < ly) {
+        intersect.setX(point.getX() + dx);
+        intersect.setY(point.getY() + dx / dir.getSlope());
+    }
+    else {
+        intersect.setX(point.getX() + dy * dir.getSlope());
+        intersect.setY(point.getY() + dy);
+    }
+
+    return intersect;
 }
