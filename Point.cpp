@@ -1,5 +1,7 @@
-#include "Point.h"
-#include "SDL2/SDL.h"
+#ifndef POINT_CPP
+#define POINT_CPP
+
+#include "Point.hpp"
 #include <iostream>
 #include <cmath>
 
@@ -77,3 +79,5 @@ Point operator-(Point const& p1, Point const& p2) {
 	p3 -= p2;
 	return p3;
 }
+
+#endif

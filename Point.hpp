@@ -1,4 +1,11 @@
+#ifndef POINT_HPP
+#define POINT_HPP
+
+#ifndef SDL_H
+#define SDL_H
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_ttf.h"
+#endif
 
 #pragma once
 class Point
@@ -30,3 +37,5 @@ private:
 bool operator==(Point const&, Point const&);
 Point operator+(Point const&, Point const&);
 Point operator-(Point const&, Point const&);
+
+#endif
