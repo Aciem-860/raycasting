@@ -4,18 +4,19 @@
 
 using namespace std;
 
-Point compute_intersection_points() {
+Point compute_intersection_points(Point * origin, Point * target) {
     vector<Point> pts = vector<Point>();
-    pts.push_back(mouse_position);
-    Point p = Point(0, 0);
+    pts.push_back(*origin);
+    Point p = Point();
     bool quit = false;
     bool intersect = false;
 
+    Point dir = *target - *origin;
+
     while (!quit) {
-        //draw_point(pts.back(), 5, 5, SDL_Color{255, 255, 0, 0});
         p = get_intersection_points(pts.back(), dir);
         // On vérifie que le point regardé est bien entre le carré vert et le carré rouge
-        quit = !((p.getX() < mouse_position.getX() && p.getX() > target_position.getX()) || ((p.getX() > mouse_position.getX() && p.getX() < target_position.getX())));
+        quit = !((p.getX() < origin->getX() && p.getX() > target->getX()) || ((p.getX() > origin->getX() && p.getX() < target->getX())));
         int x = p.getX();
         int y = p.getY();
 

@@ -11,6 +11,7 @@
 class Point
 {
 public:
+	Point();
 	Point(double, double);
 	~Point();
 	double getX() const;
@@ -21,6 +22,8 @@ public:
 	void setY(double);
 	Point& operator+=(Point const&);
 	Point& operator-=(Point const&);
+	Point& operator*=(double const [2][2]);
+	Point& operator*=(double const&);
 
 private:
 	// Méthodes
@@ -37,5 +40,7 @@ private:
 bool operator==(Point const&, Point const&);
 Point operator+(Point const&, Point const&);
 Point operator-(Point const&, Point const&);
+Point operator*(Point const&, double const [2][2]);
+Point operator*(double const&, Point const&);
 
 #endif

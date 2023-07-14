@@ -9,11 +9,11 @@
 #include <vector>
 #include <iterator>
 #include <fstream>
+#include "Player.h"
 #include "global_vars.hpp"
 #include "funcs_gfx.hpp"
 #include "Point.hpp"
 #include "funcs_raycasting.hpp"
-
 #ifndef SDL_H
 #define SDL_H
 #include "SDL2/SDL.h"

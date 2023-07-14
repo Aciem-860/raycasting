@@ -8,14 +8,10 @@
 #include <fstream>
 #include <iostream>
 #include "funcs_gfx.hpp"
+#include "funcs_raycasting.hpp"
 #include "global_vars.hpp"
-#include "Point.hpp"
 
 using namespace std;
-
-void update_dir() {
-    dir = target_position - mouse_position;
-}
 
 void render_text(SDL_Renderer* renderer,
     int x,
@@ -39,15 +35,15 @@ void render_text(SDL_Renderer* renderer,
     SDL_RenderCopy(renderer, texture, NULL, rect);
     SDL_DestroyTexture(texture);
 }
-void draw_grid(SDL_Renderer* renderer) {
+void draw_grid(SDL_Renderer* renderer, Player* player) {
     // Tracé de la grille
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    SDL_RenderDrawLine(renderer,
+    /*SDL_RenderDrawLine(renderer,
         mouse_position.getX(),
         mouse_position.getY(),
         target_position.getX(),
-        target_position.getY());
+        target_position.getY());*/
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
@@ -76,6 +72,23 @@ void draw_grid(SDL_Renderer* renderer) {
     }
 
     delete block;
+
+    // Tracé des droites (dir, fov)
+
+
+    Point target = *(player->get_pos()) + *(player->get_dir());
+    Point temp = Point(target);
+    for (double i = -1; i <= 1; i = i + 0.05) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 0);
+        temp = Point(target);
+        temp += i * *(player->get_fov());
+
+        //draw_point(renderer, temp, 5, 5, GREEN);
+        Point p = compute_intersection_points(player->get_pos(), &temp);
+        SDL_RenderDrawLine(renderer, player->get_pos()->getX(), player->get_pos()->getY(),
+            p.getX(), p.getY());
+        draw_point(renderer, p, 5, 5, YELLOW);
+    }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 

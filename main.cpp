@@ -2,12 +2,15 @@
 
 using namespace std;
 
+Player* player = new Player(100, 100, FOV);
+
 int main() {
     SDL_Event event;
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Surface* window_surface;
     TTF_Font* font;
+
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         cout << "Failed to initialize the SDL2 library : " << SDL_GetError() << endl;
@@ -58,14 +61,11 @@ int main() {
 
     while (!quit) {
         SDL_RenderClear(renderer);
-        draw_grid(renderer);
-        draw_point(renderer, mouse_position, PLAYER_W, PLAYER_H, RED);
-        draw_point(renderer, target_position, PLAYER_W, PLAYER_H, GREEN);
-        update_dir();
-        Point p = compute_intersection_points();
-        draw_point(renderer, p, 5, 5, YELLOW);
+        draw_grid(renderer, player);
+        draw_point(renderer, *(player->get_pos()), PLAYER_W, PLAYER_H, RED);
+        //draw_point(renderer, target_position, PLAYER_W, PLAYER_H, GREEN);
 
-        string s = "X : " + to_string(mouse_position.getX()) + " ; Y : " + to_string(mouse_position.getY());
+        string s = "X : " + to_string(player->get_pos()->getX()) + " ; Y : " + to_string(player->get_pos()->getY());
         const char* c = s.c_str();;
         SDL_Color yellow = SDL_Color { 255, 255, 0, 0 };
         render_text(renderer, 0, 0, c, font, rect_pos, yellow);
@@ -91,21 +91,23 @@ int main() {
                     quit = 1;
                 }
                 if (event.key.keysym.sym == SDLK_z) {
-                    target_position.setY(target_position.getY() - STEP_H);
+                    //target_position.setY(target_position.getY() - STEP_H);
                 }
                 if (event.key.keysym.sym == SDLK_q) {
-                    target_position.setX(target_position.getX() - STEP_W);
+                    player->rotate(-20);
+                    //target_position.setX(target_position.getX() - STEP_W);
                 }
                 if (event.key.keysym.sym == SDLK_s) {
-                    target_position.setY(target_position.getY() + STEP_H);
+                    //target_position.setY(target_position.getY() + STEP_H);
                 }
                 if (event.key.keysym.sym == SDLK_d) {
-                    target_position.setX(target_position.getX() + STEP_W);
+                    player->rotate(+20);
+                    //target_position.setX(target_position.getX() + STEP_W);
                 }
                 break;
             case SDL_MOUSEMOTION:
-                mouse_position.setX(event.motion.x);
-                mouse_position.setY(event.motion.y);
+                Point mouse_pos = Point(event.motion.x, event.motion.y);
+                player->move(mouse_pos);
             }
         }
 
@@ -120,4 +122,5 @@ int main() {
 
 void free_ptr() {
     delete rect_pos;
+    delete player;
 }
