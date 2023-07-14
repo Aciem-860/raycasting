@@ -5,9 +5,11 @@
 #include <cmath>
 #include <vector>
 #include <iterator>
+#include <fstream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "Point.h"
+
 #undef main
 #pragma comment (lib, "SDL2.lib")
 #pragma comment (lib, "SDL2main.lib")
@@ -18,10 +20,11 @@
 #define GRID_H 40
 #define WIDTH 680
 #define HEIGHT 480
-#define STEP_W 40
-#define STEP_H 40
+#define STEP_W 10
+#define STEP_H 10
 #define RED SDL_Color { 255, 0, 0, 0 }
 #define GREEN SDL_Color { 0, 255, 0, 0 }
+#define YELLOW SDL_Color { 255, 255, 0, 0 }
 #define FONT_PATH "C:\\Users\\pierr\\Documents\\Visual Studio 2022\\Projects\\raycasting\\Minecraft.ttf"
 
 using namespace std;
@@ -39,6 +42,8 @@ Point mouse_position = Point(0, 0);
 Point target_position = Point(375, 230);
 Point dir = target_position - mouse_position;
 
+char map_array[HEIGHT / GRID_H][WIDTH / GRID_W] = {{ 0 }};
+
 /* Déclaration des fonctions */
 
 void update_dir();
@@ -46,7 +51,8 @@ void draw_grid();
 void draw_point(Point&, int, int, SDL_Color);
 void render_text(SDL_Renderer*, int, int, const char*, TTF_Font*, SDL_Rect*, SDL_Color&);
 void free_ptr();
-vector<Point> compute_intersection_points();
+void load_map(string);
+void compute_intersection_points();
 Point get_intersection_points(Point&, Point&);
 
 /* Définition des fonctions */
@@ -90,7 +96,14 @@ int main() {
 
     bool fullscreen = false;
     bool quit = 0;
-    vector<Point> pts;
+
+    load_map("map.txt");
+    for (int x = 0; x < HEIGHT / GRID_H; x++) {
+        for (int y = 0; y < WIDTH / GRID_W; y++) {
+            cout << int(map_array[x][y]);
+        }
+        cout << endl;
+    }
 
     while (!quit) {
         SDL_RenderClear(renderer);
@@ -98,11 +111,7 @@ int main() {
         draw_point(mouse_position, PLAYER_W, PLAYER_H, RED);
         draw_point(target_position, PLAYER_W, PLAYER_H, GREEN);
         update_dir();
-        pts = compute_intersection_points();
-        vector<Point>::iterator it;
-        for (it = pts.begin(); it < pts.end(); it++) {
-            draw_point(*it, 5, 5, SDL_Color{ 255, 255, 0, 0 });
-        }
+        compute_intersection_points();
 
         string s = "X : " + to_string(mouse_position.getX()) + " ; Y : " + to_string(mouse_position.getY());
         const char* c = s.c_str();;
@@ -188,6 +197,8 @@ void render_text(SDL_Renderer* renderer,
     SDL_DestroyTexture(texture);
 }
 void draw_grid() {
+    // Tracé de la grille
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     SDL_RenderDrawLine(renderer,
         mouse_position.getX(),
@@ -201,8 +212,27 @@ void draw_grid() {
         SDL_RenderDrawLine(renderer, i * GRID_W, 0, i * GRID_W, HEIGHT);
     }
     for (int j = 0; j < HEIGHT / GRID_H; j++) {
-        SDL_RenderDrawLine(renderer, 0, j* GRID_H, WIDTH, j* GRID_H);
+        SDL_RenderDrawLine(renderer, 0, j * GRID_H, WIDTH, j* GRID_H);
     }
+
+    // Tracé des blocs
+
+    SDL_Rect* block = new SDL_Rect();
+    block->w = GRID_W;
+    block->h = GRID_H;
+
+    for (int i = 0; i < HEIGHT / GRID_H; i++) {
+        for (int j = 0; j < WIDTH / GRID_W; j++) {
+            if (map_array[i][j] != 0) {
+                SDL_SetRenderDrawColor(renderer, 140, 124, 73, 0);
+                block->x = j * GRID_W;
+                block->y = i * GRID_H;
+                SDL_RenderFillRect(renderer, block);
+            }
+        }
+    }
+
+    delete block;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 
@@ -218,22 +248,62 @@ void draw_point(Point& point, int w, int h, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 
-vector<Point> compute_intersection_points() {
+void compute_intersection_points() {
     vector<Point> pts = vector<Point>();
-    pts.push_back(get_intersection_points(mouse_position, dir));
+    pts.push_back(mouse_position);
+    Point p = Point(0, 0);
+    bool quit = false;
+    bool intersect = false;
 
-    for (int i = 0; i < 6; i++) {
-        pts.push_back(get_intersection_points(pts.back(), dir));
+    while (!quit) {
+        //draw_point(pts.back(), 5, 5, SDL_Color{255, 255, 0, 0});
+        p = get_intersection_points(pts.back(), dir);
+        // On vérifie que le point regardé est bien entre le carré vert et le carré rouge
+        quit = !((p.getX() < mouse_position.getX() && p.getX() > target_position.getX()) || ((p.getX() > mouse_position.getX() && p.getX() < target_position.getX())));
+        int x = p.getX();
+        int y = p.getY();
+
+        x /= GRID_W;
+        y /= GRID_H;
+        
+        if (int(p.getX()) % GRID_W == 0)
+            x = x - (dir.getX() < 0 ? 1 : 0);
+        if (int(p.getY()) % GRID_H == 0)
+            y = y - (dir.getY() < 0 ? 1 : 0);
+
+        intersect = (map_array[y][x] != 0) ? true : false;
+
+        if (intersect) {
+            quit = true;
+            pts.push_back(p);
+            draw_point(p, 5, 5, YELLOW);
+        }
+        if (!quit)
+            pts.push_back(p);
     }
 
-    return pts;
+    /*if (intersect)
+        draw_point(pts.back(), 5, 5, SDL_Color{ 255, 255, 0, 0 });*/
 }
 
+
+// Donne les points d'intersection avec la grille (pas avec les blocs !!)
 Point get_intersection_points(Point &point, Point &dir) {
-    int dx, dy;
+    double dx, dy;
     
-    dx = GRID_W; // le pas unitaire en x
-    dy = GRID_H; // le pas unitaire en y
+    dx = int(point.getX()) % GRID_W; // le pas unitaire en x
+    if (dx == 0)
+        dx = GRID_W;
+
+    dy = int(point.getY()) % GRID_H; // le pas unitaire en y
+    if (dy == 0)
+        dy = GRID_H;
+
+    if (dir.getX() > 0 && dx != GRID_W)
+        dx = GRID_W - dx;
+
+    if (dir.getY() > 0 && dy != GRID_H)
+        dy = GRID_H - dy;
 
     double lx = dx * sqrt(1 + 1 / pow(dir.getSlope(), 2));
     double ly = dy * sqrt(1 + pow(dir.getSlope(), 2));
@@ -253,4 +323,26 @@ Point get_intersection_points(Point &point, Point &dir) {
     }
 
     return intersect;
+}
+
+void load_map(string path) {
+    string line;
+    ifstream map(path);
+    int i = 0;
+    int j = 0;
+    if (map.is_open()) {
+        while (getline(map, line)) {
+            for (string::iterator it = line.begin(); it < line.end(); it++) {
+                map_array[i][j] = *it - 48;
+                j++;
+            }
+            i++;
+            j = 0;
+        }
+
+        map.close();
+    }
+    else {
+        cout << "Unable to open the file : " << path << endl;
+    }
 }

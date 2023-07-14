@@ -4,14 +4,14 @@
 class Point
 {
 public:
-	Point(Sint32, Sint32);
+	Point(double, double);
 	~Point();
-	Sint32 getX() const;
-	Sint32 getY() const;
-	Sint32 getLength() const;
+	double getX() const;
+	double getY() const;
+	double getLength() const;
 	double getSlope() const;
-	void setX(Sint32);
-	void setY(Sint32);
+	void setX(double);
+	void setY(double);
 	Point& operator+=(Point const&);
 	Point& operator-=(Point const&);
 
@@ -21,9 +21,9 @@ private:
 	void computeSlope();
 
 	// Attributs
-	Sint32 _x;
-	Sint32 _y;
-	Sint32 _length;
+	double _x;
+	double _y;
+	double _length;
 	double _slope;
 };
 

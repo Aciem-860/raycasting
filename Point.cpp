@@ -5,19 +5,22 @@
 
 using namespace std;
 
-Point::Point(Sint32 x, Sint32 y) : _x(x), _y(y) { }
+Point::Point(double x, double y) : _x(x), _y(y) {
+	computeLength();
+	computeSlope();
+}
 
 Point::~Point() { }
 
-Sint32 Point::getX() const {
+double Point::getX() const {
 	return _x;
 }
 
-Sint32 Point::getY() const {
+double Point::getY() const {
 	return _y;
 }
 
-Sint32 Point::getLength() const {
+double Point::getLength() const {
 	return _length;
 }
 
@@ -30,19 +33,17 @@ void Point::computeLength() {
 }
 
 void Point::computeSlope() {
-	double x = _x;
-	double y = _y;
 	if (_y != 0)
-		_slope = x / y;
+		_slope = _x / _y;
 }
 
-void Point::setX(Sint32 x) {
+void Point::setX(double x) {
 	_x = x;
 	computeLength();
 	computeSlope();
 }
 
-void Point::setY(Sint32 y) {
+void Point::setY(double y) {
 	_y = y;
 	computeLength();
 	computeSlope();
